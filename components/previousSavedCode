@@ -1,0 +1,309 @@
+// 'use client'
+
+// import Sidebar from '@/components/Sidebar'
+// import BottomNav from '@/components/BottomNav'
+// import Hero from '@/components/Hero'
+// import NextSection from '@/components/NextSection'
+// import Lenis from "lenis"
+// import { useEffect, useRef } from "react"
+
+// export default function Page() {
+//   const heroRef = useRef(null)
+
+//   useEffect(() => {
+//     const lenis = new Lenis({ autoRaf: false })
+
+//     function raf(time) {
+//       lenis.raf(time)
+//       requestAnimationFrame(raf)
+//     }
+
+//     requestAnimationFrame(raf)
+
+//     return () => lenis.destroy()
+//   }, [])
+
+//   return (
+//     <div className="min-h-screen bg-stone-50">
+//       <Sidebar heroRef={heroRef} />
+
+//       <main>
+//         <Hero heroRef={heroRef} />
+//         <NextSection />
+//         <NextSection />
+//         <NextSection />
+//         <NextSection />
+//       </main>
+
+//       <BottomNav />
+//     </div>
+//   )
+// }
+
+// 'use client'
+
+// import { useEffect, useRef } from "react"
+// import gsap from "gsap"
+// import { ScrollTrigger } from "gsap/ScrollTrigger"
+// import { Home, Grid, LayoutGrid, Phone, Info } from "lucide-react"
+
+// gsap.registerPlugin(ScrollTrigger)
+
+// export default function Sidebar({ heroRef }) {
+//   const sidebarRef = useRef(null)
+//   const logoFullRef = useRef(null)
+//   const logoSmallRef = useRef(null)
+//   const labelsRef = useRef([])
+
+//   useEffect(() => {
+//     if (!heroRef?.current) return
+  
+//     const ctx = gsap.context(() => {
+//       // Create one master timeline for the sidebar
+//       // Match the 'scrub' value (e.g., 1 or 1.5) to the Hero for perfect sync
+//       const tl = gsap.timeline({
+//         scrollTrigger: {
+//           trigger: heroRef.current,
+//           start: "top top",
+//           end: "30% top", // Matches the early phase of the Hero scroll
+//           scrub: 1,      // Numerical scrub for "studio" smoothness
+//         }
+//       })
+  
+//       tl.to(sidebarRef.current, {
+//         width: "4.1rem",
+//         paddingLeft: "1rem",
+//         paddingRight: "1rem",
+//         borderTopRightRadius: "2rem",
+//         borderBottomRightRadius: "2rem",
+//         ease: "power2.inOut",
+//       }, 0) // Starts at 0
+      
+//       .to(logoFullRef.current, {
+//         opacity: 0,
+//         scale: 0.8, // Adding a slight scale makes the fade feel more "pro"
+//         ease: "power2.inOut",
+//       }, 0)
+  
+//       .to(logoSmallRef.current, {
+//         opacity: 1,
+//         scale: 1.2, // Small "pop" in effect
+//         ease: "back.out(1.7)",
+//       }, 0.1) // Slight delay for overlapping effect
+  
+//       .to(labelsRef.current, {
+//         opacity: 0,
+//         x: -20, // Slide them out to the left while fading
+//         stagger: 0.05, // Subtle stagger makes it look premium
+//         ease: "power2.inOut",
+//       }, 0)
+//     })
+  
+//     return () => ctx.revert()
+//   }, [heroRef])
+
+//   return (
+//     <div
+//       ref={sidebarRef}
+//       style={{
+//         width: "14rem",
+//         paddingLeft: "2.25rem",
+//         paddingRight: "2.25rem",
+//         borderTopRightRadius: "3rem",
+//         borderBottomRightRadius: "3rem",
+//       }}
+//       className="fixed z-[99] left-0 top-10 bottom-10 bg-[var(--secondary-bg)] border-2 border-l-0 border-[var(--dark-grey)] flex flex-col overflow-hidden"
+//     >
+//       {/* Logo */}
+//       <div className="py-12 h-[120px] flex items-center relative">
+//         <div
+//           ref={logoFullRef}
+//           className="text-3xl tracking-wider font-bold text-stone-900 font-abel whitespace-nowrap"
+//         >
+//           HS Crafters
+//         </div>
+
+//         <div
+//           ref={logoSmallRef}
+//           style={{ opacity: 0 }}
+//           className="absolute left-1/2 -translate-x-1/2 text-3xl tracking-wider font-bold text-stone-900 font-abel whitespace-nowrap"
+//         >
+//           HS
+//         </div>
+//       </div>
+
+//       {/* Navigation */}
+//       <nav className="flex-1 mb-6 flex flex-col justify-center gap-10">
+//         <SidebarItem
+//           icon={<Home size={26} />}
+//           label="Home"
+//           labelRef={(el) => (labelsRef.current[0] = el)}
+//         />
+//         <SidebarItem
+//           icon={<Grid size={26} />}
+//           label="Categories"
+//           labelRef={(el) => (labelsRef.current[1] = el)}
+//         />
+//         <SidebarItem
+//           icon={<LayoutGrid size={26} />}
+//           label="Catalog"
+//           labelRef={(el) => (labelsRef.current[2] = el)}
+//         />
+//         <SidebarItem
+//           icon={<Phone size={26} />}
+//           label="Contact"
+//           labelRef={(el) => (labelsRef.current[3] = el)}
+//         />
+//         <SidebarItem
+//           icon={<Info size={26} />}
+//           label="About"
+//           labelRef={(el) => (labelsRef.current[4] = el)}
+//         />
+//       </nav>
+//     </div>
+//   )
+// }
+
+
+
+
+// function SidebarItem({ icon, label, labelRef }) {
+//   return (
+//     <a
+//       href="#"
+//       className="flex items-center gap-3 text-xl text-[--dark-grey] hover:text-stone-900 transition-colors"
+//     >
+//       <div className="min-w-[32px] flex justify-center">{icon}</div>
+
+//       <span ref={labelRef} className="whitespace-nowrap">
+//         {label}
+//       </span>
+//     </a>
+//   )
+// }
+
+
+
+
+// import React from 'react'
+// import { Button } from './custom/Button'
+
+// function BottomNav() {
+//   return (
+//       <div className="fixed z-[99] bottom-12 right-16 flex gap-2">
+//         <Button label="SHOP" variant='secondary-outlined'/>
+//         <Button label="CART" variant='secondary-outlined'/>
+//       </div>
+//   )
+// }
+
+// export default BottomNav
+
+
+
+// import Image from 'next/image'
+// import gsap from "gsap"
+// import { ScrollTrigger } from "gsap/ScrollTrigger"
+// import { Button } from '@/components/custom/Button'
+// import { HeroSVG } from '@/components/custom/HeroSVG'
+// import { useEffect, useRef } from 'react'
+
+// gsap.registerPlugin(ScrollTrigger)
+
+// export default function Hero({ heroRef }) {
+//   const contentRef = useRef(null)
+//   const circleRef = useRef(null)
+//   const svgRef = useRef(null)
+//   const lampsRef = useRef(null)
+
+//   useEffect(() => {
+//     if (!heroRef?.current) return;
+  
+//     const ctx = gsap.context(() => {
+//       // 1. Initial State (Entrance Animation)
+//       // This makes the page feel alive the moment it loads
+//       gsap.from(contentRef.current.children, {
+//         y: 100,
+//         opacity: 0,
+//         duration: 1.2,
+//         stagger: 0.2,
+//         ease: "power4.out"
+//       });
+  
+//       // 2. Scroll Animation (The Master Timeline)
+//       const tl = gsap.timeline({
+//         scrollTrigger: {
+//           trigger: heroRef.current,
+//           start: "top top",
+//           end: "+=150%", 
+//           scrub: 1.5, // Smooth lag for a high-end feel
+//           pin: true,
+//           anticipatePin: 1,
+//         }
+//       });
+  
+//       tl.to(contentRef.current, { 
+//         y: -100, 
+//         opacity: 0, 
+//         filter: "blur(10px)", // Adds "focus" depth
+//         ease: "power2.inOut" 
+//       }, 0)
+      
+//       .to(circleRef.current, { 
+//         scale: 8, // Using scale is more performant than height/width
+//         xPercent: -20, // Shifts the focus as it expands
+//         ease: "expo.inOut" 
+//       }, 0)
+  
+//       .to(svgRef.current, { 
+//         scale: 0.5,
+//         rotate: -15, 
+//         opacity: 0,
+//         filter: "blur(20px)",
+//         ease: "power3.inOut"
+//       }, 0)
+  
+//       .to(lampsRef.current, { 
+//         y: -200, 
+//         x: 100, 
+//         rotate: 10,
+//         opacity: 0,
+//         ease: "power2.in" 
+//       }, 0);
+  
+//     });
+  
+//     return () => ctx.revert();
+//   }, [heroRef]);
+
+//   return (
+//     <section ref={heroRef} className="pl-56 min-h-screen flex items-center overflow-hidden relative">
+//       <div className="flex items-center justify-between pl-20 py-20">
+//         {/* Left Content */}
+//         <div ref={contentRef} className="left relative z-20 flex-1">
+//           <h1 className="text-7xl font-bold text-[var(--black)] mb-2 tracking-wide font-amarante relative text-nowrap">
+//             <span className='w-full absolute left-0 right-0 border-t-8 border-[var(--black)] -my-2'></span>
+//             HS CRAFTERS
+//           </h1>
+//           <p className="text-xl text-[var(--dark-grey)] mb-6 max-w-md leading-relaxed tracking-wide font-roboto">
+//             Turning Life into Art, One Craft at a Time.
+//           </p>
+
+//           {/* CTA Buttons */}
+//           <div className="flex gap-6">
+//             <Button label={"SHOP"} variant='outlined' />
+//             <Button label={"HAVE A TOUR"} variant='filled' />
+//           </div>
+//         </div>
+//         {/* Right Content */}
+//         <div className="right">
+//           <div ref={circleRef} className="circle h-[140vmin] bg-[var(--light-secondary-bg)] aspect-square absolute right-0 translate-x-[60%] top-1/2 -translate-y-1/2 rounded-full z-10"></div>
+//           <div ref={svgRef} className='absolute right-0 translate-x-[60%] top-1/2 -translate-y-1/2 z-10 grid items-center h-[80vmin]'><HeroSVG /></div>
+//           <div ref={lampsRef} className="lamp absolute top-0 right-0 z-10">
+//             <img src="/hero-lamps.png" className='w-[56vmin]' alt="Lamps" />
+//           </div>
+//         </div>
+//       </div>
+//     </section>
+//   )
+// }

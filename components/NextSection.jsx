@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 
-export default function NextSection() {
+export function NextSection() {
   return (
     <section className="ps-[4.5rem] min-h-screen flex items-center justify-center bg-white">
       <motion.div
