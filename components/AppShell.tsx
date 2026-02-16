@@ -6,24 +6,22 @@ import SplashScreen from "./SplashScreen"
 import PageTransition from "./PageTransition"
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [showSplash, setShowSplash] = useState(true)
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === "undefined") return true
+    return !sessionStorage.getItem("splashShown")
+  })
 
   useEffect(() => {
-    const alreadyShown = sessionStorage.getItem("splashShown")
-
-    if (alreadyShown) {
-      setShowSplash(false)
-      return
-    }
+    if (!showSplash) return
 
     sessionStorage.setItem("splashShown", "true")
 
     const timer = setTimeout(() => {
       setShowSplash(false)
-    }, 20000)
+    }, 1000)
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [showSplash])
 
   return (
     <>

@@ -6,7 +6,7 @@ import SmoothScroll from "@/components/SmoothScroll"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-[var(--bg)] min-h-screen">
+    <div className="bg-[var(--bg)] min-h-screen overflow-x-hidden">
       <SmoothScroll />
 
       <Navbar />
