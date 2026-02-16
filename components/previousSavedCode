@@ -146,7 +146,7 @@
 //         />
 //         <SidebarItem
 //           icon={<LayoutGrid size={26} />}
-//           label="Catalog"
+//           label="Shop"
 //           labelRef={(el) => (labelsRef.current[2] = el)}
 //         />
 //         <SidebarItem

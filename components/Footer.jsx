@@ -1,7 +1,7 @@
 // components/Footer.jsx
 export function Footer() {
     return (
-      <footer className="pt-20 pb-32 px-10 border-t border-[var(--secondary-bg)] mt-20">
+      <footer className="pt-20 pb-32 px-10 border-t border-[var(--secondary-bg)]">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
           <div className="col-span-2">
             <h2 style={{ fontFamily: 'var(--font-amarante)' }} className="text-4xl text-[var(--black)] mb-4">HS Crafters</h2>
