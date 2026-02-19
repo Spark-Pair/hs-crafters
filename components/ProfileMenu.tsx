@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, User } from 'lucide-react'
+import { User } from 'lucide-react'
 import { useState } from 'react'
 
 import { useAuth } from './providers/AuthProvider'
@@ -25,7 +25,7 @@ export function ProfileMenu({ variant = 'user' }: ProfileMenuProps) {
     return (
       <Link
         href="/login"
-        className="inline-flex items-center gap-2 rounded-full bg-[var(--black)] text-[var(--bg)] px-5 py-3 text-xs uppercase tracking-[0.2em]"
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)]/60 backdrop-blur-xl text-[var(--dark-grey)] px-5 py-3 text-xs uppercase tracking-[0.2em] hover:text-[var(--black)] transition-colors"
         style={{ fontFamily: 'var(--font-roboto)' }}
       >
         Login
@@ -37,17 +37,19 @@ export function ProfileMenu({ variant = 'user' }: ProfileMenuProps) {
     <div className="relative">
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex items-center gap-2 rounded-full border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)] text-[var(--dark-grey)] px-4 py-2"
+        className="w-12 h-12 rounded-full border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)]/70 backdrop-blur-xl text-[var(--dark-grey)] flex items-center justify-center hover:text-[var(--black)] transition-colors"
+        aria-label="Open profile menu"
       >
-        <User size={16} />
-        <span style={{ fontFamily: 'var(--font-abel)' }} className="text-sm">
-          {user.name}
+        <span
+          className="w-8 h-8 rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] flex items-center justify-center text-xs uppercase"
+          style={{ fontFamily: 'var(--font-roboto)' }}
+        >
+          {user.name?.slice(0, 1) || <User size={12} />}
         </span>
-        <ChevronDown size={14} />
       </button>
 
       {open ? (
-        <div className="absolute right-0 mt-2 w-72 rounded-3xl border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)] p-4 shadow-xl">
+        <div className="absolute right-0 mt-2 w-72 rounded-3xl border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)]/95 backdrop-blur-xl p-4 shadow-xl">
           <p
             style={{ fontFamily: 'var(--font-roboto)' }}
             className="text-[10px] uppercase tracking-[0.25em] text-[var(--dark-grey)]"

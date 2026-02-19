@@ -78,6 +78,17 @@ export function AdminGuardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-[var(--bg)]">
+      <div className="fixed top-8 left-6 z-[60]">
+        <div className="rounded-full border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)]/70 backdrop-blur-xl px-5 py-3">
+          <p
+            style={{ fontFamily: 'var(--font-roboto)' }}
+            className="text-[10px] uppercase tracking-[0.25em] text-[var(--dark-grey)]"
+          >
+            Admin Panel
+          </p>
+        </div>
+      </div>
+
       <div className="fixed top-8 left-0 w-full flex justify-center z-50 px-6">
         <div className="bg-[var(--light-secondary-bg)]/60 backdrop-blur-xl rounded-full border border-[var(--secondary-bg)] relative p-2">
           <motion.nav
@@ -122,7 +133,7 @@ export function AdminGuardShell({ children }: { children: React.ReactNode }) {
         <ProfileMenu variant="admin" />
       </div>
 
-      <main className="px-6 py-36 md:px-10">{children}</main>
+      <main className="px-6 pt-28 pb-10 md:px-10">{children}</main>
     </div>
   )
 }

@@ -15,6 +15,7 @@ import {
 type ConfirmState = {
   title: string
   description: string
+  intent: 'danger' | 'success'
   action: () => void
 }
 
@@ -86,30 +87,63 @@ export default function Page() {
           className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
           style={{ fontFamily: 'var(--font-abel)' }}
         />
-        <div className="grid md:grid-cols-2 gap-3">
-          <select
-            value={categoryFilter}
-            onChange={(event) => setCategoryFilter(event.target.value)}
-            className="rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
+
+        <div className="space-y-2">
+          <p
+            style={{ fontFamily: 'var(--font-roboto)' }}
+            className="text-[10px] uppercase tracking-[0.2em] text-[var(--dark-grey)]"
           >
+            Category
+          </p>
+          <div className="flex flex-wrap gap-2">
             {categories.map((cat) => (
-              <option key={cat} value={cat}>
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] border ${
+                  categoryFilter === cat
+                    ? 'bg-[var(--black)] text-white border-[var(--black)]'
+                    : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
+                }`}
+              >
                 {cat}
-              </option>
+              </button>
             ))}
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(event) => setStatusFilter(event.target.value as 'all' | OrderStatus)}
-            className="rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <p
+            style={{ fontFamily: 'var(--font-roboto)' }}
+            className="text-[10px] uppercase tracking-[0.2em] text-[var(--dark-grey)]"
           >
-            <option value="all">All Statuses</option>
+            Status
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] border ${
+                statusFilter === 'all'
+                  ? 'bg-[var(--black)] text-white border-[var(--black)]'
+                  : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
+              }`}
+            >
+              All Statuses
+            </button>
             {statuses.map((item) => (
-              <option key={item} value={item}>
+              <button
+                key={item}
+                onClick={() => setStatusFilter(item)}
+                className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] border ${
+                  statusFilter === item
+                    ? 'bg-[var(--black)] text-white border-[var(--black)]'
+                    : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
+                }`}
+              >
                 {item}
-              </option>
+              </button>
             ))}
-          </select>
+          </div>
         </div>
       </section>
 
@@ -141,9 +175,25 @@ export default function Page() {
                   ${item.amount}
                 </td>
                 <td className="p-4">
-                  <span className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] bg-[var(--black)] text-white">
-                    {item.status}
-                  </span>
+                  <div className="inline-flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] border ${getOrderStatusChipClass(
+                        item.status,
+                      )}`}
+                    >
+                      {item.status}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setStatusModalId(item.id)
+                        setSelectedStatus(item.status)
+                      }}
+                      className="p-1.5 rounded-full border border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:text-[var(--black)]"
+                      aria-label="Edit order status"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                  </div>
                 </td>
                 <td className="p-4">
                   <div className="flex items-center gap-2">
@@ -167,19 +217,11 @@ export default function Page() {
                       <Pencil size={14} />
                     </button>
                     <button
-                      onClick={() => {
-                        setStatusModalId(item.id)
-                        setSelectedStatus(item.status)
-                      }}
-                      className="rounded-full border border-[var(--secondary-bg)] px-3 py-1 text-[10px] uppercase tracking-[0.2em]"
-                    >
-                      Update Status
-                    </button>
-                    <button
                       onClick={() =>
                         setConfirm({
                           title: 'Delete Order',
                           description: `Are you sure you want to delete order "${item.id}"?`,
+                          intent: 'danger',
                           action: () =>
                             setItems((prev) => prev.filter((row) => row.id !== item.id)),
                         })
@@ -292,10 +334,10 @@ export default function Page() {
             <button
               key={option}
               onClick={() => setSelectedStatus(option)}
-              className={`rounded-full px-4 py-3 text-xs uppercase tracking-[0.2em] border ${
-                selectedStatus === option
+                className={`rounded-full px-4 py-3 text-xs uppercase tracking-[0.2em] border ${
+                  selectedStatus === option
                   ? 'bg-[var(--black)] text-white border-[var(--black)]'
-                  : 'border-[var(--secondary-bg)] text-[var(--dark-grey)]'
+                  : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
               }`}
             >
               {option}
@@ -322,6 +364,7 @@ export default function Page() {
         open={!!confirm}
         title={confirm?.title ?? ''}
         description={confirm?.description ?? ''}
+        intent={confirm?.intent ?? 'danger'}
         onCancel={() => setConfirm(null)}
         onConfirm={() => {
           confirm?.action()
@@ -401,4 +444,10 @@ function OrderForm({
       </select>
     </div>
   )
+}
+
+function getOrderStatusChipClass(status: OrderStatus) {
+  if (status === 'pending') return 'bg-amber-100 text-amber-800 border-amber-200'
+  if (status === 'working') return 'bg-sky-100 text-sky-800 border-sky-200'
+  return 'bg-emerald-100 text-emerald-800 border-emerald-200'
 }

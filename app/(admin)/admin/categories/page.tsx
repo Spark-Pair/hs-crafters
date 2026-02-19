@@ -10,6 +10,7 @@ import { initialCategories, type AdminCategory } from '@/components/sections/adm
 type ConfirmState = {
   title: string
   description: string
+  intent: 'danger' | 'success'
   action: () => void
 }
 
@@ -82,6 +83,7 @@ export default function Page() {
                       setConfirm({
                         title: item.isActive ? 'Deactivate Category' : 'Activate Category',
                         description: `Are you sure you want to ${item.isActive ? 'deactivate' : 'activate'} "${item.name}"?`,
+                        intent: item.isActive ? 'danger' : 'success',
                         action: () =>
                           setItems((prev) =>
                             prev.map((row) =>
@@ -91,7 +93,9 @@ export default function Page() {
                       })
                     }
                     className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
-                      item.isActive ? 'bg-emerald-700 text-white' : 'bg-zinc-500 text-white'
+                      item.isActive
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : 'bg-red-100 text-red-800 border border-red-200'
                     }`}
                   >
                     {item.isActive ? 'Active' : 'Inactive'}
@@ -103,6 +107,7 @@ export default function Page() {
                       setConfirm({
                         title: item.featuredOnHome ? 'Remove From Home' : 'Feature On Home',
                         description: `Are you sure you want to ${item.featuredOnHome ? 'remove' : 'feature'} "${item.name}" ${item.featuredOnHome ? 'from' : 'on'} home page?`,
+                        intent: item.featuredOnHome ? 'danger' : 'success',
                         action: () =>
                           setItems((prev) =>
                             prev.map((row) =>
@@ -114,7 +119,9 @@ export default function Page() {
                       })
                     }
                     className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
-                      item.featuredOnHome ? 'bg-[var(--black)] text-white' : 'bg-zinc-400 text-white'
+                      item.featuredOnHome
+                        ? 'bg-[var(--black)] text-white border border-[var(--black)]'
+                        : 'bg-zinc-100 text-zinc-700 border border-zinc-200'
                     }`}
                   >
                     {item.featuredOnHome ? 'Featured' : 'Not Featured'}
@@ -142,6 +149,7 @@ export default function Page() {
                         setConfirm({
                           title: 'Delete Category',
                           description: `Are you sure you want to delete "${item.name}"?`,
+                          intent: 'danger',
                           action: () =>
                             setItems((prev) => prev.filter((row) => row.id !== item.id)),
                         })
@@ -230,6 +238,7 @@ export default function Page() {
         open={!!confirm}
         title={confirm?.title ?? ''}
         description={confirm?.description ?? ''}
+        intent={confirm?.intent ?? 'danger'}
         confirmLabel="Yes"
         onCancel={() => setConfirm(null)}
         onConfirm={() => {

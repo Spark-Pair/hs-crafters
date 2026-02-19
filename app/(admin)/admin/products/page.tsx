@@ -10,6 +10,7 @@ import { initialCategories, initialProducts, type AdminProduct } from '@/compone
 type ConfirmState = {
   title: string
   description: string
+  intent: 'danger' | 'success'
   action: () => void
 }
 
@@ -71,6 +72,12 @@ export default function Page() {
           className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
           style={{ fontFamily: 'var(--font-abel)' }}
         />
+        <p
+          style={{ fontFamily: 'var(--font-roboto)' }}
+          className="text-[10px] uppercase tracking-[0.2em] text-[var(--dark-grey)]"
+        >
+          Category
+        </p>
         <div className="flex flex-wrap gap-2">
           {categories.map((cat) => (
             <button
@@ -79,7 +86,7 @@ export default function Page() {
               className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] border ${
                 categoryFilter === cat
                   ? 'bg-[var(--black)] text-white border-[var(--black)]'
-                  : 'border-[var(--secondary-bg)] text-[var(--dark-grey)]'
+                  : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
               }`}
             >
               {cat}
@@ -117,6 +124,7 @@ export default function Page() {
                       setConfirm({
                         title: item.isActive ? 'Deactivate Product' : 'Activate Product',
                         description: `Are you sure you want to ${item.isActive ? 'deactivate' : 'activate'} "${item.name}"?`,
+                        intent: item.isActive ? 'danger' : 'success',
                         action: () =>
                           setItems((prev) =>
                             prev.map((row) =>
@@ -126,7 +134,9 @@ export default function Page() {
                       })
                     }
                     className={`rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em] ${
-                      item.isActive ? 'bg-emerald-700 text-white' : 'bg-zinc-500 text-white'
+                      item.isActive
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        : 'bg-zinc-100 text-zinc-700 border border-zinc-200'
                     }`}
                   >
                     {item.isActive ? 'Active' : 'Inactive'}
@@ -156,6 +166,7 @@ export default function Page() {
                         setConfirm({
                           title: 'Delete Product',
                           description: `Are you sure you want to delete "${item.name}"?`,
+                          intent: 'danger',
                           action: () =>
                             setItems((prev) => prev.filter((row) => row.id !== item.id)),
                         })
@@ -283,6 +294,7 @@ export default function Page() {
         open={!!confirm}
         title={confirm?.title ?? ''}
         description={confirm?.description ?? ''}
+        intent={confirm?.intent ?? 'danger'}
         onCancel={() => setConfirm(null)}
         onConfirm={() => {
           confirm?.action()

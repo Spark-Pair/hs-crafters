@@ -1,0 +1,7 @@
+User Panel:
+1. Create a page for showcasing categories, clicking on one navigates us to shop with that category filter
+
+Admin Panel:
+1. Categories contains image and name, update edit and create form, show the image in details modal also
+2. Creating products should ask for Name, images, Category, Price. Update create, Edit and Details Modal
+3. Orders should also have product
