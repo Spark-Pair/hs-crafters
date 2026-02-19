@@ -1,5 +1,6 @@
 // import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
+import { AppProviders } from '@/components/providers/AppProviders'
 
 // const _geist = Geist({ subsets: ['latin'] })
 // const _geistMono = Geist_Mono({ subsets: ['latin'] })
@@ -10,7 +11,7 @@ export const metadata = {
   generator: 'v0.app',
 }
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
@@ -22,7 +23,9 @@ export default function RootLayout({ children }) {
         />
       </head>
 
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   )
 }

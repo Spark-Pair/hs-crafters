@@ -1,3 +1,5 @@
+import { ShopCatalog } from '@/components/sections/shop/ShopCatalog'
+
 export default function Page() {
-  return <div>Shop Page</div>
+  return <ShopCatalog />
 }
