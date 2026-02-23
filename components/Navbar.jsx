@@ -1,6 +1,6 @@
 'use client'
 import { motion } from 'framer-motion'
-import { Home, Folder, Phone, Info } from 'lucide-react'
+import { Home, Folder, Phone, Info, LayoutGrid } from 'lucide-react'
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { usePathname, useRouter } from "next/navigation"
 import { ProfileMenu } from './ProfileMenu'
@@ -16,6 +16,7 @@ export function Navbar() {
   const itemRefs = useRef([])
   const navItems = [
     { icon: <Home size={18} />, label: 'Home', href: "/home" },
+    { icon: <LayoutGrid size={18} />, label: 'Categories', href: "/categories" },
     { icon: <Folder size={18} />, label: 'Shop', href: "/shop" },
     { icon: <Phone size={18} />, label: 'Contact', href: "/contact" },
     { icon: <Info size={18} />, label: 'About', href: "/about" },

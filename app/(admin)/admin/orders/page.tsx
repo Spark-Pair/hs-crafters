@@ -1,46 +1,74 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Eye, Pencil, Trash2, Plus } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Eye, Pencil, Trash2, Plus, Filter } from 'lucide-react'
 
 import { AdminModal } from '@/components/sections/admin/AdminModal'
 import { ConfirmDialog } from '@/components/sections/admin/ConfirmDialog'
-import {
-  initialCategories,
-  initialOrders,
-  type AdminOrder,
-  type OrderStatus,
-} from '@/components/sections/admin/mockData'
+import { CustomSelect } from '@/components/custom/CustomSelect'
+import { SlidingFilterButtons } from '@/components/custom/SlidingFilterButtons'
+import type { Category, Order, OrderStatus, Product } from '@/lib/types'
 
 type ConfirmState = {
   title: string
   description: string
   intent: 'danger' | 'success'
-  action: () => void
+  action: () => Promise<void> | void
 }
 
 const statuses: OrderStatus[] = ['pending', 'working', 'delivered']
 
 export default function Page() {
-  const [items, setItems] = useState<AdminOrder[]>(initialOrders)
+  const [items, setItems] = useState<Order[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
   const [search, setSearch] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('All')
-  const [statusFilter, setStatusFilter] = useState<'all' | OrderStatus>('all')
+  const [filters, setFilters] = useState<{ category: string; status: 'all' | OrderStatus }>({
+    category: 'All',
+    status: 'all',
+  })
 
   const [createOpen, setCreateOpen] = useState(false)
   const [detailsId, setDetailsId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [statusModalId, setStatusModalId] = useState<string | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>('pending')
+  const [filterOpen, setFilterOpen] = useState(false)
   const [confirm, setConfirm] = useState<ConfirmState | null>(null)
 
   const [customer, setCustomer] = useState('')
-  const [productName, setProductName] = useState('')
-  const [category, setCategory] = useState(initialCategories[0]?.name ?? 'Ceramics')
-  const [amount, setAmount] = useState('0')
+  const [customerEmail, setCustomerEmail] = useState('')
+  const [selectedProductId, setSelectedProductId] = useState('')
+  const [quantity, setQuantity] = useState('1')
   const [status, setStatus] = useState<OrderStatus>('pending')
 
-  const categories = useMemo(() => ['All', ...initialCategories.map((cat) => cat.name)], [])
+  const fetchAll = async () => {
+    const [ordersRes, productsRes, categoriesRes] = await Promise.all([
+      fetch('/api/orders', { cache: 'no-store' }),
+      fetch('/api/products', { cache: 'no-store' }),
+      fetch('/api/categories', { cache: 'no-store' }),
+    ])
+    if (ordersRes.ok) setItems((await ordersRes.json()) as Order[])
+    if (productsRes.ok) {
+      const list = (await productsRes.json()) as Product[]
+      setProducts(list)
+      if (!selectedProductId && list[0]) setSelectedProductId(list[0].id)
+    }
+    if (categoriesRes.ok) setCategories((await categoriesRes.json()) as Category[])
+  }
+
+  useEffect(() => {
+    fetchAll()
+  }, [])
+
+  const categoriesTabs = useMemo(
+    () => ['All', ...categories.map((item) => item.name)],
+    [categories],
+  )
+  const productOptions = useMemo(
+    () => products.map((item) => ({ value: item.id, label: `${item.name} ($${item.price})` })),
+    [products],
+  )
   const detailItem = items.find((item) => item.id === detailsId) ?? null
   const editingItem = items.find((item) => item.id === editingId) ?? null
   const statusItem = items.find((item) => item.id === statusModalId) ?? null
@@ -48,18 +76,39 @@ export default function Page() {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase()
     return items.filter((item) => {
+      const categoryNames = item.items.map((row) => row.categoryName || '').join(' ')
+      const productNames = item.items.map((row) => row.name).join(' ')
       const matchesSearch =
         item.customer.toLowerCase().includes(query) ||
-        item.productName.toLowerCase().includes(query) ||
-        item.id.toLowerCase().includes(query)
-      const matchesCategory = categoryFilter === 'All' || item.category === categoryFilter
-      const matchesStatus = statusFilter === 'all' || item.status === statusFilter
+        item.id.toLowerCase().includes(query) ||
+        productNames.toLowerCase().includes(query)
+      const matchesCategory =
+        filters.category === 'All' ||
+        categoryNames.toLowerCase().includes(filters.category.toLowerCase())
+      const matchesStatus = filters.status === 'all' || item.status === filters.status
       return matchesSearch && matchesCategory && matchesStatus
     })
-  }, [categoryFilter, items, search, statusFilter])
+  }, [filters.category, filters.status, items, search])
+
+  const activeFilterChips = [`Category: ${filters.category}`, `Status: ${filters.status}`]
+
+  const selectedProduct = products.find((item) => item.id === selectedProductId) ?? null
+
+  const openEdit = (item: Order) => {
+    setEditingId(item.id)
+    setCustomer(item.customer)
+    setCustomerEmail(item.customerEmail ?? '')
+    setStatus(item.status)
+    const first = item.items[0]
+    if (first) {
+      const matched = products.find((product) => product.name === first.name)
+      if (matched) setSelectedProductId(matched.id)
+      setQuantity(String(first.quantity))
+    }
+  }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 style={{ fontFamily: 'var(--font-amarante)' }} className="text-5xl md:text-6xl text-[var(--black)]">
           Orders
@@ -67,9 +116,10 @@ export default function Page() {
         <button
           onClick={() => {
             setCustomer('')
-            setProductName('')
-            setAmount('0')
+            setCustomerEmail('')
+            setQuantity('1')
             setStatus('pending')
+            if (products[0]) setSelectedProductId(products[0].id)
             setCreateOpen(true)
           }}
           className="inline-flex items-center gap-2 rounded-full bg-[var(--black)] text-[var(--bg)] px-6 py-3 text-xs uppercase tracking-[0.2em]"
@@ -79,81 +129,43 @@ export default function Page() {
         </button>
       </div>
 
-      <section className="rounded-[1.8rem] border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)] p-5 space-y-4">
-        <input
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search by customer, order id, product..."
-          className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
-          style={{ fontFamily: 'var(--font-abel)' }}
-        />
-
-        <div className="space-y-2">
-          <p
+      <section className="mt-6 rounded-[1.8rem] border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)] p-5">
+        <div className="flex items-center gap-3">
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by customer, order id, product..."
+            className="flex-1 rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
+            style={{ fontFamily: 'var(--font-abel)' }}
+          />
+          <button
+            onClick={() => setFilterOpen(true)}
+            className="rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3 inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em]"
             style={{ fontFamily: 'var(--font-roboto)' }}
-            className="text-[10px] uppercase tracking-[0.2em] text-[var(--dark-grey)]"
           >
-            Category
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setCategoryFilter(cat)}
-                className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] border ${
-                  categoryFilter === cat
-                    ? 'bg-[var(--black)] text-white border-[var(--black)]'
-                    : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
+            <Filter size={14} />
+            Filters
+          </button>
         </div>
-
-        <div className="space-y-2">
-          <p
-            style={{ fontFamily: 'var(--font-roboto)' }}
-            className="text-[10px] uppercase tracking-[0.2em] text-[var(--dark-grey)]"
-          >
-            Status
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setStatusFilter('all')}
-              className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] border ${
-                statusFilter === 'all'
-                  ? 'bg-[var(--black)] text-white border-[var(--black)]'
-                  : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
-              }`}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {activeFilterChips.map((chip) => (
+            <span
+              key={chip}
+              className="rounded-full border border-[var(--secondary-bg)] px-3 py-1 text-[10px] uppercase tracking-[0.2em]"
             >
-              All Statuses
-            </button>
-            {statuses.map((item) => (
-              <button
-                key={item}
-                onClick={() => setStatusFilter(item)}
-                className={`rounded-full px-4 py-2 text-[10px] uppercase tracking-[0.2em] border ${
-                  statusFilter === item
-                    ? 'bg-[var(--black)] text-white border-[var(--black)]'
-                    : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
-                }`}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
+              {chip}
+            </span>
+          ))}
         </div>
       </section>
 
-      <section className="rounded-[1.8rem] border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)] overflow-hidden">
+      <section className="mt-6 rounded-[1.8rem] border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)] overflow-hidden">
         <table className="w-full">
           <thead className="border-b border-[var(--secondary-bg)]">
             <tr className="text-left">
               <th className="p-4 text-xs uppercase tracking-[0.2em] text-[var(--dark-grey)]">Order</th>
               <th className="p-4 text-xs uppercase tracking-[0.2em] text-[var(--dark-grey)]">Customer</th>
-              <th className="p-4 text-xs uppercase tracking-[0.2em] text-[var(--dark-grey)]">Category</th>
+              <th className="p-4 text-xs uppercase tracking-[0.2em] text-[var(--dark-grey)]">Items</th>
               <th className="p-4 text-xs uppercase tracking-[0.2em] text-[var(--dark-grey)]">Amount</th>
               <th className="p-4 text-xs uppercase tracking-[0.2em] text-[var(--dark-grey)]">Status</th>
               <th className="p-4 text-xs uppercase tracking-[0.2em] text-[var(--dark-grey)]">Actions</th>
@@ -169,7 +181,7 @@ export default function Page() {
                   {item.customer}
                 </td>
                 <td className="p-4" style={{ fontFamily: 'var(--font-abel)' }}>
-                  {item.category}
+                  {item.items.length} item(s)
                 </td>
                 <td className="p-4" style={{ fontFamily: 'var(--font-abel)' }}>
                   ${item.amount}
@@ -204,14 +216,7 @@ export default function Page() {
                       <Eye size={14} />
                     </button>
                     <button
-                      onClick={() => {
-                        setEditingId(item.id)
-                        setCustomer(item.customer)
-                        setProductName(item.productName)
-                        setCategory(item.category)
-                        setAmount(String(item.amount))
-                        setStatus(item.status)
-                      }}
+                      onClick={() => openEdit(item)}
                       className="p-2 rounded-full border border-[var(--secondary-bg)]"
                     >
                       <Pencil size={14} />
@@ -222,8 +227,10 @@ export default function Page() {
                           title: 'Delete Order',
                           description: `Are you sure you want to delete order "${item.id}"?`,
                           intent: 'danger',
-                          action: () =>
-                            setItems((prev) => prev.filter((row) => row.id !== item.id)),
+                          action: async () => {
+                            await fetch(`/api/orders/${item.id}`, { method: 'DELETE' })
+                            await fetchAll()
+                          },
                         })
                       }
                       className="p-2 rounded-full border border-[var(--secondary-bg)]"
@@ -238,34 +245,86 @@ export default function Page() {
         </table>
       </section>
 
+      <AdminModal open={filterOpen} title="Order Filters" onClose={() => setFilterOpen(false)}>
+        <div className="space-y-4">
+          <div>
+            <p
+              style={{ fontFamily: 'var(--font-roboto)' }}
+              className="text-[10px] uppercase tracking-[0.2em] text-[var(--dark-grey)] mb-2"
+            >
+              Category
+            </p>
+            <SlidingFilterButtons
+              options={categoriesTabs}
+              value={filters.category}
+              onChange={(value) => setFilters((prev) => ({ ...prev, category: value }))}
+            />
+          </div>
+          <div>
+            <p
+              style={{ fontFamily: 'var(--font-roboto)' }}
+              className="text-[10px] uppercase tracking-[0.2em] text-[var(--dark-grey)] mb-2"
+            >
+              Status
+            </p>
+            <SlidingFilterButtons
+              options={['all', 'pending', 'working', 'delivered']}
+              value={filters.status}
+              onChange={(value) =>
+                setFilters((prev) => ({ ...prev, status: value as 'all' | OrderStatus }))
+              }
+            />
+          </div>
+        </div>
+        <button
+          onClick={() => setFilterOpen(false)}
+          className="mt-6 rounded-full bg-[var(--black)] text-[var(--bg)] px-6 py-3 text-xs uppercase tracking-[0.2em]"
+        >
+          Apply
+        </button>
+      </AdminModal>
+
       <AdminModal open={createOpen} title="Create Order" onClose={() => setCreateOpen(false)}>
         <OrderForm
           customer={customer}
-          productName={productName}
-          category={category}
-          amount={amount}
+          customerEmail={customerEmail}
+          quantity={quantity}
           status={status}
+          productId={selectedProductId}
+          productOptions={productOptions}
           setCustomer={setCustomer}
-          setProductName={setProductName}
-          setCategory={setCategory}
-          setAmount={setAmount}
+          setCustomerEmail={setCustomerEmail}
+          setQuantity={setQuantity}
           setStatus={setStatus}
+          setProductId={setSelectedProductId}
         />
         <button
-          onClick={() => {
-            if (!customer.trim() || !productName.trim()) return
-            setItems((prev) => [
-              ...prev,
-              {
-                id: `ord-${Math.floor(Math.random() * 9000 + 1000)}`,
+          onClick={async () => {
+            if (!customer.trim() || !selectedProduct) return
+            const qty = Math.max(1, Number(quantity) || 1)
+            const response = await fetch('/api/orders', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
                 customer: customer.trim(),
-                productName: productName.trim(),
-                category,
-                amount: Number(amount) || 0,
+                customerEmail: customerEmail.trim(),
                 status,
-              },
-            ])
+                amount: selectedProduct.price * qty,
+                items: [
+                  {
+                    id: selectedProduct.id,
+                    name: selectedProduct.name,
+                    image: selectedProduct.images[0],
+                    price: selectedProduct.price,
+                    quantity: qty,
+                    categoryName: selectedProduct.categoryName,
+                  },
+                ],
+              }),
+            })
+            if (!response.ok) return
             setCreateOpen(false)
+            await fetchAll()
           }}
           className="mt-6 rounded-full bg-[var(--black)] text-[var(--bg)] px-6 py-3 text-xs uppercase tracking-[0.2em]"
         >
@@ -276,34 +335,44 @@ export default function Page() {
       <AdminModal open={!!editingItem} title="Edit Order" onClose={() => setEditingId(null)}>
         <OrderForm
           customer={customer}
-          productName={productName}
-          category={category}
-          amount={amount}
+          customerEmail={customerEmail}
+          quantity={quantity}
           status={status}
+          productId={selectedProductId}
+          productOptions={productOptions}
           setCustomer={setCustomer}
-          setProductName={setProductName}
-          setCategory={setCategory}
-          setAmount={setAmount}
+          setCustomerEmail={setCustomerEmail}
+          setQuantity={setQuantity}
           setStatus={setStatus}
+          setProductId={setSelectedProductId}
         />
         <button
-          onClick={() => {
-            if (!editingId || !customer.trim() || !productName.trim()) return
-            setItems((prev) =>
-              prev.map((item) =>
-                item.id === editingId
-                  ? {
-                      ...item,
-                      customer: customer.trim(),
-                      productName: productName.trim(),
-                      category,
-                      amount: Number(amount) || 0,
-                      status,
-                    }
-                  : item,
-              ),
-            )
+          onClick={async () => {
+            if (!editingId || !customer.trim() || !selectedProduct) return
+            const qty = Math.max(1, Number(quantity) || 1)
+            const response = await fetch(`/api/orders/${editingId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                customer: customer.trim(),
+                customerEmail: customerEmail.trim(),
+                status,
+                amount: selectedProduct.price * qty,
+                items: [
+                  {
+                    id: selectedProduct.id,
+                    name: selectedProduct.name,
+                    image: selectedProduct.images[0],
+                    price: selectedProduct.price,
+                    quantity: qty,
+                    categoryName: selectedProduct.categoryName,
+                  },
+                ],
+              }),
+            })
+            if (!response.ok) return
             setEditingId(null)
+            await fetchAll()
           }}
           className="mt-6 rounded-full bg-[var(--black)] text-[var(--bg)] px-6 py-3 text-xs uppercase tracking-[0.2em]"
         >
@@ -316,10 +385,32 @@ export default function Page() {
           <div className="space-y-3">
             <p style={{ fontFamily: 'var(--font-abel)' }}>Order ID: {detailItem.id}</p>
             <p style={{ fontFamily: 'var(--font-abel)' }}>Customer: {detailItem.customer}</p>
-            <p style={{ fontFamily: 'var(--font-abel)' }}>Product: {detailItem.productName}</p>
-            <p style={{ fontFamily: 'var(--font-abel)' }}>Category: {detailItem.category}</p>
+            <p style={{ fontFamily: 'var(--font-abel)' }}>Email: {detailItem.customerEmail || '-'}</p>
             <p style={{ fontFamily: 'var(--font-abel)' }}>Amount: ${detailItem.amount}</p>
             <p style={{ fontFamily: 'var(--font-abel)' }}>Status: {detailItem.status}</p>
+            <div className="pt-3 border-t border-[var(--secondary-bg)] grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {detailItem.items.map((item) => (
+                <article
+                  key={`${detailItem.id}-${item.id}-${item.name}`}
+                  className="rounded-2xl border border-[var(--secondary-bg)] bg-[var(--bg)] p-3"
+                >
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-28 object-cover rounded-xl"
+                  />
+                  <h4
+                    style={{ fontFamily: 'var(--font-amarante)' }}
+                    className="text-2xl text-[var(--black)] mt-2"
+                  >
+                    {item.name}
+                  </h4>
+                  <p style={{ fontFamily: 'var(--font-abel)' }} className="text-sm text-[var(--dark-grey)]">
+                    Qty: {item.quantity} | ${item.price}
+                  </p>
+                </article>
+              ))}
+            </div>
           </div>
         ) : null}
       </AdminModal>
@@ -334,8 +425,8 @@ export default function Page() {
             <button
               key={option}
               onClick={() => setSelectedStatus(option)}
-                className={`rounded-full px-4 py-3 text-xs uppercase tracking-[0.2em] border ${
-                  selectedStatus === option
+              className={`rounded-full px-4 py-3 text-xs uppercase tracking-[0.2em] border ${
+                selectedStatus === option
                   ? 'bg-[var(--black)] text-white border-[var(--black)]'
                   : 'border-[var(--secondary-bg)] text-[var(--dark-grey)] hover:border-[var(--dark-grey)]/40'
               }`}
@@ -345,14 +436,15 @@ export default function Page() {
           ))}
         </div>
         <button
-          onClick={() => {
+          onClick={async () => {
             if (!statusModalId) return
-            setItems((prev) =>
-              prev.map((item) =>
-                item.id === statusModalId ? { ...item, status: selectedStatus } : item,
-              ),
-            )
+            await fetch(`/api/orders/${statusModalId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: selectedStatus }),
+            })
             setStatusModalId(null)
+            await fetchAll()
           }}
           className="mt-6 rounded-full bg-[var(--black)] text-[var(--bg)] px-6 py-3 text-xs uppercase tracking-[0.2em]"
         >
@@ -366,8 +458,8 @@ export default function Page() {
         description={confirm?.description ?? ''}
         intent={confirm?.intent ?? 'danger'}
         onCancel={() => setConfirm(null)}
-        onConfirm={() => {
-          confirm?.action()
+        onConfirm={async () => {
+          await confirm?.action()
           setConfirm(null)
         }}
       />
@@ -377,28 +469,30 @@ export default function Page() {
 
 type OrderFormProps = {
   customer: string
-  productName: string
-  category: string
-  amount: string
+  customerEmail: string
+  quantity: string
   status: OrderStatus
+  productId: string
+  productOptions: Array<{ value: string; label: string }>
   setCustomer: (value: string) => void
-  setProductName: (value: string) => void
-  setCategory: (value: string) => void
-  setAmount: (value: string) => void
+  setCustomerEmail: (value: string) => void
+  setQuantity: (value: string) => void
   setStatus: (value: OrderStatus) => void
+  setProductId: (value: string) => void
 }
 
 function OrderForm({
   customer,
-  productName,
-  category,
-  amount,
+  customerEmail,
+  quantity,
   status,
+  productId,
+  productOptions,
   setCustomer,
-  setProductName,
-  setCategory,
-  setAmount,
+  setCustomerEmail,
+  setQuantity,
   setStatus,
+  setProductId,
 }: OrderFormProps) {
   return (
     <div className="space-y-3">
@@ -409,39 +503,28 @@ function OrderForm({
         className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
       />
       <input
-        value={productName}
-        onChange={(event) => setProductName(event.target.value)}
-        placeholder="Product"
+        value={customerEmail}
+        onChange={(event) => setCustomerEmail(event.target.value)}
+        placeholder="Customer Email"
         className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
       />
-      <select
-        value={category}
-        onChange={(event) => setCategory(event.target.value)}
-        className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
-      >
-        {initialCategories.map((cat) => (
-          <option key={cat.id} value={cat.name}>
-            {cat.name}
-          </option>
-        ))}
-      </select>
+      <CustomSelect
+        value={productId}
+        onChange={setProductId}
+        options={productOptions}
+        placeholder="Select product"
+      />
       <input
-        value={amount}
-        onChange={(event) => setAmount(event.target.value)}
-        placeholder="Amount"
+        value={quantity}
+        onChange={(event) => setQuantity(event.target.value)}
+        placeholder="Quantity"
         className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
       />
-      <select
+      <CustomSelect
         value={status}
-        onChange={(event) => setStatus(event.target.value as OrderStatus)}
-        className="w-full rounded-full border border-[var(--secondary-bg)] bg-[var(--bg)] px-4 py-3"
-      >
-        {statuses.map((item) => (
-          <option key={item} value={item}>
-            {item}
-          </option>
-        ))}
-      </select>
+        onChange={(value) => setStatus(value as OrderStatus)}
+        options={statuses.map((item) => ({ value: item, label: item }))}
+      />
     </div>
   )
 }

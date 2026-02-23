@@ -1,15 +1,25 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useSearchParams } from 'next/navigation'
 
 import { categories, products } from './data'
 import { ProductCard } from './ProductCard'
 import { ShopFilters } from './ShopFilters'
 
 export function ShopCatalog() {
+  const searchParams = useSearchParams()
+  const categoryFromUrl = searchParams.get('category')
   const [activeCategory, setActiveCategory] = useState('All Pieces')
   const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    if (!categoryFromUrl) return
+    if (categories.includes(categoryFromUrl)) {
+      setActiveCategory(categoryFromUrl)
+    }
+  }, [categoryFromUrl])
 
   const filteredProducts = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()

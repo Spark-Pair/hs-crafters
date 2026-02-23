@@ -1,0 +1,97 @@
+{
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Ceramics",
+      "image": "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?q=80&w=1200",
+      "isActive": true,
+      "featuredOnHome": true
+    },
+    {
+      "id": "cat-2",
+      "name": "Woodwork",
+      "image": "https://images.unsplash.com/photo-1533090161767-e6ffed986c88?q=80&w=1200",
+      "isActive": true,
+      "featuredOnHome": true
+    },
+    {
+      "id": "cat-3",
+      "name": "Textiles",
+      "image": "https://images.unsplash.com/photo-1610505466020-058597376045?q=80&w=1200",
+      "isActive": true,
+      "featuredOnHome": false
+    },
+    {
+      "id": "cat-4",
+      "name": "Limited",
+      "image": "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=1200",
+      "isActive": false,
+      "featuredOnHome": false
+    }
+  ],
+  "products": [
+    {
+      "id": "prod-1",
+      "name": "Ridge Clay Vase",
+      "categoryId": "cat-1",
+      "categoryName": "Ceramics",
+      "price": 64,
+      "images": [
+        "https://images.unsplash.com/photo-1612196808214-b7e239e5f501?q=80&w=1400"
+      ],
+      "isActive": true
+    },
+    {
+      "id": "prod-2",
+      "name": "Oak Serving Board",
+      "categoryId": "cat-2",
+      "categoryName": "Woodwork",
+      "price": 92,
+      "images": [
+        "https://images.unsplash.com/photo-1503602642458-232111445657?q=80&w=1400"
+      ],
+      "isActive": true
+    },
+    {
+      "id": "prod-3",
+      "name": "Linen Throw",
+      "categoryId": "cat-3",
+      "categoryName": "Textiles",
+      "price": 78,
+      "images": [
+        "https://images.unsplash.com/photo-1517705008128-361805f42e86?q=80&w=1400"
+      ],
+      "isActive": true
+    },
+    {
+      "id": "prod-4",
+      "name": "Edition No. 7 Vessel",
+      "categoryId": "cat-4",
+      "categoryName": "Limited",
+      "price": 180,
+      "images": [
+        "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=1400"
+      ],
+      "isActive": false
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord-6686",
+      "customer": "Admin User",
+      "customerEmail": "admin@hscrafters.art",
+      "amount": 81.12,
+      "status": "pending",
+      "items": [
+        {
+          "id": "ridge-clay-vase",
+          "name": "Ridge Clay Vase",
+          "image": "https://images.unsplash.com/photo-1612196808214-b7e239e5f501?q=80&w=1200",
+          "price": 64,
+          "quantity": 1
+        }
+      ],
+      "createdAt": "2026-02-23T05:31:55.203Z"
+    }
+  ]
+}

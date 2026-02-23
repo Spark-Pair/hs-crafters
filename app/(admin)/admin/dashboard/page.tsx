@@ -1,24 +1,42 @@
 'use client'
 
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 
-import {
-  initialCategories,
-  initialOrders,
-  initialProducts,
-} from '@/components/sections/admin/mockData'
-
-const stats = [
-  { label: 'Categories', value: initialCategories.length },
-  { label: 'Products', value: initialProducts.length },
-  { label: 'Orders', value: initialOrders.length },
-  {
-    label: 'Pending Orders',
-    value: initialOrders.filter((order) => order.status === 'pending').length,
-  },
-]
+import type { Category, Order, Product } from '@/lib/types'
 
 export default function Page() {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
+
+  useEffect(() => {
+    const run = async () => {
+      const [categoriesRes, productsRes, ordersRes] = await Promise.all([
+        fetch('/api/categories', { cache: 'no-store' }),
+        fetch('/api/products', { cache: 'no-store' }),
+        fetch('/api/orders', { cache: 'no-store' }),
+      ])
+      if (categoriesRes.ok) setCategories((await categoriesRes.json()) as Category[])
+      if (productsRes.ok) setProducts((await productsRes.json()) as Product[])
+      if (ordersRes.ok) setOrders((await ordersRes.json()) as Order[])
+    }
+    run()
+  }, [])
+
+  const stats = useMemo(
+    () => [
+      { label: 'Categories', value: categories.length },
+      { label: 'Products', value: products.length },
+      { label: 'Orders', value: orders.length },
+      {
+        label: 'Pending Orders',
+        value: orders.filter((order) => order.status === 'pending').length,
+      },
+    ],
+    [categories.length, orders, products.length],
+  )
+
   return (
     <div className="max-w-7xl mx-auto">
       <h1

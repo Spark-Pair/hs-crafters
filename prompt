@@ -5,3 +5,23 @@ Admin Panel:
 1. Categories contains image and name, update edit and create form, show the image in details modal also
 2. Creating products should ask for Name, images, Category, Price. Update create, Edit and Details Modal
 3. Orders should also have product
+
+
+
+Do these:
+1. space-y-4 on parents, forces modals to have margin top
+2. close latest opened modals or dropdown on escape.
+3. close modals or dropdowns on clicking outside
+4. use sliding buttons for category filtering in admin panel
+5. show filter button where needed beside search input in admin panel, clicking on it opens a modal, allowing filtering. and show applied filters bellow search input
+6. Make custom select tag, this one is shit, open options dropdown onfocus, searchable, navigateable through arrow keys, hittin enter selects when using arrow keys.
+7. Orders have order items, if user adds multiple items in cart adn places order, then we show it as an order, inside it we have those items, we'll show them in order details modal as cards, along with their picture
+
+
+write with backend and image upload
+
+
+Admin Panel:
+1. don't need url input, just file upload
+2. select closes right after opening becaue it's not focused anymore
+3. Don't need filtering bellow input field anymore, we'll do that through filter modal, use sliding buttons there, just show the current filters

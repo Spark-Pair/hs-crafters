@@ -5,9 +5,11 @@ import { motion } from 'framer-motion'
 import { ArrowLeft, Trash2 } from 'lucide-react'
 
 import { useCart } from '@/components/providers/CartProvider'
+import { useAuth } from '@/components/providers/AuthProvider'
 
 export function CartPage() {
   const { items, subtotal, updateQuantity, removeItem, clearCart } = useCart()
+  const { user } = useAuth()
   const shipping = items.length > 0 ? 12 : 0
   const tax = subtotal * 0.08
   const total = subtotal + shipping + tax
@@ -147,6 +149,30 @@ export function CartPage() {
 
             <button
               disabled={items.length === 0}
+              onClick={async () => {
+                if (items.length === 0) return
+                const payload = {
+                  customer: user?.name ?? 'Guest',
+                  customerEmail: user?.email ?? '',
+                  amount: Number(total.toFixed(2)),
+                  status: 'pending',
+                  items: items.map((item) => ({
+                    id: item.id,
+                    name: item.name,
+                    image: item.image,
+                    price: item.unitPrice,
+                    quantity: item.quantity,
+                  })),
+                }
+                const response = await fetch('/api/orders', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(payload),
+                })
+                if (response.ok) {
+                  clearCart()
+                }
+              }}
               className="mt-8 w-full rounded-full bg-[var(--black)] text-[var(--bg)] px-8 py-4 uppercase tracking-[0.2em] text-xs disabled:opacity-40 disabled:cursor-not-allowed"
               style={{ fontFamily: 'var(--font-roboto)' }}
             >

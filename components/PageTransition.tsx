@@ -21,7 +21,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
       filter: "blur(0px)",
       transition: { 
         duration: 0.9, 
-        ease: [0.16, 1, 0.3, 1] // Custom Expo Out ease
+        ease: [0.16, 1, 0.3, 1] as const // Custom Expo Out ease
       }
     },
     // Outgoing page: Falls downward, scales down to 0.9
@@ -32,7 +32,7 @@ export default function PageTransition({ children }: { children: React.ReactNode
       filter: "blur(10px)",
       transition: { 
         duration: 0.7, 
-        ease: [0.76, 0, 0.24, 1] 
+        ease: [0.76, 0, 0.24, 1] as const
       }
     }
   }

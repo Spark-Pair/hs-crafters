@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { User } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { useAuth } from './providers/AuthProvider'
+import { useLayerDismiss } from '@/hooks/use-layer-dismiss'
 
 type ProfileMenuProps = {
   variant?: 'user' | 'admin'
@@ -15,6 +16,13 @@ export function ProfileMenu({ variant = 'user' }: ProfileMenuProps) {
   const router = useRouter()
   const { isHydrated, isLoggedIn, user, logout } = useAuth()
   const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement | null>(null)
+
+  useLayerDismiss({
+    open,
+    onDismiss: () => setOpen(false),
+    refs: [menuRef],
+  })
 
   if (!isHydrated) {
     return null
@@ -34,7 +42,7 @@ export function ProfileMenu({ variant = 'user' }: ProfileMenuProps) {
   }
 
   return (
-    <div className="relative">
+    <div ref={menuRef} className="relative">
       <button
         onClick={() => setOpen((prev) => !prev)}
         className="w-12 h-12 rounded-full border border-[var(--secondary-bg)] bg-[var(--light-secondary-bg)]/70 backdrop-blur-xl text-[var(--dark-grey)] flex items-center justify-center hover:text-[var(--black)] transition-colors"
